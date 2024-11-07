@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.0 using JasperReports Library 6.21.0 
+     This XML file defines a JasperReports template for generating a "PedidosCiudad" report.
+     The report displays customer orders per city, grouped by city, and organized by order date. -->
+
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+	name="PedidosCiudad" pageWidth="595" pageHeight="842"
+	columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20"
+	uuid="f2803584-5f24-47eb-926a-20e97bf3391a">
+
+	<!-- Report properties defining SQL connection and layout settings for the report -->
+	<property name="com.jaspersoft.studio.data.sql.tables" value="" />
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fabrica" />
+
+	<!-- Defines a parameter named "año" of type Integer to receive the report year as input -->
+	<parameter name="año" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+
+	<!-- SQL query to retrieve order data by city for a specific year passed as a parameter -->
+	<queryString language="SQL">
+        <![CDATA[
+            SELECT ciudad, id_pedido, fecha_pedido 
+            FROM clientes, pedidos 
+            WHERE clientes.ID_Cliente = pedidos.ID_Cliente AND year(fecha_pedido)=$P{año}
+            ORDER BY ciudad
+        ]]>
+    </queryString>
+
+	<!-- Fields define each column of data retrieved by the SQL query -->
+	<field name="ciudad" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="Ciudad" />
+		<property name="com.jaspersoft.studio.field.tree.path" value="clientes" />
+	</field>
+	<field name="id_pedido" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="ID_Pedido" />
+		<property name="com.jaspersoft.studio.field.tree.path" value="pedidos" />
+	</field>
+	<field name="fecha_pedido" class="java.time.LocalDateTime">
+		<property name="com.jaspersoft.studio.field.name" value="Fecha_Pedido" />
+		<property name="com.jaspersoft.studio.field.tree.path" value="pedidos" />
+	</field>
+
+	<!-- Defines count variables that reset per city group, counting orders within each city -->
+	<variable name="ciudad1" class="java.lang.Integer" resetType="Group" resetGroup="Ciudad"
+		calculation="Count">
+		<variableExpression><![CDATA[$F{ciudad}]]></variableExpression>
+	</variable>
+	<variable name="ciudad2" class="java.lang.Integer" resetType="Group" resetGroup="Ciudad"
+		calculation="Count">
+		<variableExpression><![CDATA[$F{ciudad}]]></variableExpression>
+	</variable>
+
+	<!-- Group by "Ciudad" (city) with header and footer to display totals per city -->
+	<group name="Ciudad">
+		<groupExpression><![CDATA[$F{ciudad}]]></groupExpression>
+
+		<groupHeader>
+			<band height="86">
+				<!-- Displays city name at the start of each group -->
+				<textField>
+					<reportElement x="130" y="10" width="100" height="23" />
+					<textElement textAlignment="Center" verticalAlignment="Middle" />
+					<textFieldExpression><![CDATA[$F{ciudad}]]></textFieldExpression>
+				</textField>
+
+				<!-- Static text labels for "Order Number" and "Order Date" columns -->
+				<staticText>
+					<reportElement x="130" y="48" width="100" height="20" />
+					<textElement textAlignment="Center" verticalAlignment="Middle" />
+					<text><![CDATA[Order Number]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="330" y="50" width="100" height="20" />
+					<textElement textAlignment="Center" verticalAlignment="Middle" />
+					<text><![CDATA[Order Date]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+
+		<!-- Group footer to display total orders per city -->
+		<groupFooter>
+			<band height="52">
+				<textField>
+					<reportElement x="470" y="10" width="100" height="20" />
+					<textElement textAlignment="Left" verticalAlignment="Middle" />
+					<textFieldExpression><![CDATA[$V{ciudad2}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="330" y="10" width="100" height="20" />
+					<textElement textAlignment="Center" verticalAlignment="Middle" />
+					<text><![CDATA[TOTAL ORDERS:]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+
+	<!-- Title section for the report header -->
+	<title>
+		<band height="127">
+			<!-- Report title -->
+			<staticText>
+				<reportElement x="80" y="30" width="400" height="30" backcolor="#FFB6B5" />
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="18" isBold="true" />
+				</textElement>
+				<text><![CDATA[Order List by City]]></text>
+			</staticText>
+			<!-- Author name -->
+			<staticText>
+				<reportElement x="0" y="0" width="140" height="20" />
+				<text><![CDATA[RAFAEL MARTINEZ SILVA]]></text>
+			</staticText>
+			<!-- Year label and value passed as parameter -->
+			<staticText>
+				<reportElement x="130" y="80" width="100" height="20" />
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16" isBold="true" />
+				</textElement>
+				<text><![CDATA[YEAR]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="330" y="80" width="100" height="20" />
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16" />
+				</textElement>
+				<textFieldExpression><![CDATA[$P{año}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+
+	<!-- Detail section displaying individual records -->
+	<detail>
+		<band height="41">
+			<!-- Displays order ID -->
+			<textField>
+				<reportElement x="130" y="8" width="100" height="20" />
+				<textElement textAlignment="Center" verticalAlignment="Middle" />
+				<textFieldExpression><![CDATA[$F{id_pedido}]]></textFieldExpression>
+			</textField>
+			<!-- Displays order date -->
+			<textField>
+				<reportElement x="330" y="10" width="100" height="20" />
+				<textElement textAlignment="Center" verticalAlignment="Middle" />
+				<textFieldExpression><![CDATA[$F{fecha_pedido}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
